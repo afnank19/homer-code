@@ -9,25 +9,19 @@ import (
 	"os"
 )
 
-// This is from GPT, so needs a thorough review
-// type Message struct {
-//     Role    string `json:"role"`
-//     Content string `json:"content"`
-// }
-
 type GroqChatCompletionResponse struct {
-	ID        string `json:"id"`
-	Object    string `json:"object"`
-	Created   int64  `json:"created"`
-	Model     string `json:"model"`
-	Choices   []struct {
+	ID      string `json:"id"`
+	Object  string `json:"object"`
+	Created int64  `json:"created"`
+	Model   string `json:"model"`
+	Choices []struct {
 		Index   int `json:"index"`
 		Message struct {
 			Role    string `json:"role"`
 			Content string `json:"content"`
 		} `json:"message"`
-		Logprobs     any `json:"logprobs"`
-		FinishReason string      `json:"finish_reason"`
+		Logprobs     any    `json:"logprobs"`
+		FinishReason string `json:"finish_reason"`
 	} `json:"choices"`
 	Usage struct {
 		QueueTime        float64 `json:"queue_time"`
@@ -38,12 +32,12 @@ type GroqChatCompletionResponse struct {
 		TotalTokens      int     `json:"total_tokens"`
 		TotalTime        float64 `json:"total_time"`
 	} `json:"usage"`
-	UsageBreakdown    interface{} `json:"usage_breakdown"`
-	SystemFingerprint string      `json:"system_fingerprint"`
-	XGroq             struct {
-		ID string `json:"id"`
-	} `json:"x_groq"`
-	ServiceTier string `json:"service_tier"`
+	UsageBreakdown interface{} `json:"usage_breakdown"`
+	// SystemFingerprint string      `json:"system_fingerprint"`
+	// XGroq             struct {
+	// 	ID string `json:"id"`
+	// } `json:"x_groq"`
+	// ServiceTier string `json:"service_tier"`
 }
 
 func Symphony() {
@@ -57,22 +51,48 @@ type UserMessage struct {
 	msg string
 }
 
+// This needs to be thought out more, but im tryna get the agentic loop going first
+// probably will be other datatypes, especially for tools, then have a message builder that takes this struct,
+// and creates a message ready for the LLM
+type AgentContext struct {
+	goal        string
+	toolResults string
+	tools       string
+}
+
 func StartLoop() {
 	for i := range MAX_STEPS {
 		fmt.Println(i)
 	}
 
-	requestLLM()
+	var ac AgentContext = AgentContext{
+		goal:        "What was the latest command ran?",
+		toolResults: "",
+		tools:       "history",
+	}
+
+	// Alright so here is how it will go
+	// Step 1, feed the tool result, and user goal into the LLM
+	// Step 2, check if response is a tool call, or action to stop
+	// Step 3, if stop, then stop, else add to tool result
+	// Step 4, GO TO Step 1
+
+	requestLLM(ac)
 }
 
-func requestLLM() {
+func requestLLM(ac AgentContext) string {
+	llmMsgContent := fmt.Sprintf(`{"role": "system", "content": "You are a terminal AI agent, you will resolve the users query by calling tools and here are the available tools you can call but call them as a string response: %s"}`, ac.tools)
+
 	// temp as of now
-	jsonData := []byte(`{
+	jsonData := []byte(fmt.Sprintf(`{
 		"model": "openai/gpt-oss-120b",
 		"messages": [
-			{"role": "user", "content": "Search AI, and return the first word, and tool calls"}
+			%s,
+			{"role": "user", "content": "Users Query: %s"}
 		]
-	}`)
+	}`, llmMsgContent, ac.goal))
+
+	fmt.Println(string(jsonData))
 
 	req, err := http.NewRequest("POST", GROQ_URL, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -104,4 +124,6 @@ func requestLLM() {
 	}
 
 	fmt.Println(res.Choices[0].Message.Content)
+
+	return res.Choices[0].Message.Content
 }
