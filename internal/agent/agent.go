@@ -20,8 +20,9 @@ type GroqChatCompletionResponse struct {
 			Role    string `json:"role"`
 			Content string `json:"content"`
 		} `json:"message"`
-		Logprobs     any    `json:"logprobs"`
-		FinishReason string `json:"finish_reason"`
+		ToolCall     []ToolCall `json:"tool_calls"`
+		Logprobs     any        `json:"logprobs"`
+		FinishReason string     `json:"finish_reason"`
 	} `json:"choices"`
 	Usage struct {
 		QueueTime        float64 `json:"queue_time"`
@@ -38,6 +39,15 @@ type GroqChatCompletionResponse struct {
 	// 	ID string `json:"id"`
 	// } `json:"x_groq"`
 	// ServiceTier string `json:"service_tier"`
+}
+
+type ToolCall struct {
+	ID       string `json:"id"`
+	Type     string `json:"type"`
+	Function struct {
+		Name      string `json:"name"`
+		Arguments string `json:"arguments"` // keep as string; parse separately if needed
+	} `json:"function"`
 }
 
 func Symphony() {
@@ -68,7 +78,7 @@ func StartLoop() {
 	var ac AgentContext = AgentContext{
 		goal:        "What was the latest command ran?",
 		toolResults: "",
-		tools:       "history",
+		tools:       "see_command_history",
 	}
 
 	// Alright so here is how it will go
@@ -78,19 +88,22 @@ func StartLoop() {
 	// Step 4, GO TO Step 1
 
 	requestLLM(ac)
+
+	// runTerminalCommand()
 }
 
 func requestLLM(ac AgentContext) string {
-	llmMsgContent := fmt.Sprintf(`{"role": "system", "content": "You are a terminal AI agent, you will resolve the users query by calling tools and here are the available tools you can call but call them as a string response: %s"}`, ac.tools)
+	llmMsgContent := fmt.Sprintf(`{"role": "system", "content": "You are a terminal AI agent, you will resolve the users query by calling tools and here are the available tools you can call: %s"}`, ac.tools)
 
 	// temp as of now
-	jsonData := []byte(fmt.Sprintf(`{
+	jsonData := fmt.Appendf(nil, `{
 		"model": "openai/gpt-oss-120b",
 		"messages": [
 			%s,
 			{"role": "user", "content": "Users Query: %s"}
 		]
-	}`, llmMsgContent, ac.goal))
+	}
+	`, llmMsgContent, ac.goal)
 
 	fmt.Println(string(jsonData))
 
@@ -116,14 +129,19 @@ func requestLLM(ac AgentContext) string {
 	// }
 
 	// fmt.Println("Resp: "+string(body))
-	var res GroqChatCompletionResponse
+	var res map[string]any
 
 	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(res.Choices[0].Message.Content)
+	choices := res["choices"].([]any)
+	firstChoice := choices[0].(map[string]any)
+	message := firstChoice["message"].(map[string]any)
+	content := message["content"].(string)
+	fmt.Println("Full message:", content)
+	// fmt.Println(res["choices"])
 
-	return res.Choices[0].Message.Content
+	return ""
 }
