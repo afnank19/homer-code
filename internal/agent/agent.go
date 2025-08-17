@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -76,7 +77,7 @@ func StartLoop() {
 	}
 
 	var ac AgentContext = AgentContext{
-		goal:        "What was the latest command ran?",
+		goal:        "what's the git status, summarize",
 		toolResults: "",
 		tools:       "see_command_history",
 	}
@@ -93,7 +94,7 @@ func StartLoop() {
 }
 
 func requestLLM(ac AgentContext) string {
-	llmMsgContent := fmt.Sprintf(`{"role": "system", "content": "You are a terminal AI agent, you will resolve the users query by calling tools and here are the available tools you can call: %s"}`, ac.tools)
+	llmMsgContent := fmt.Sprintf(`{"role": "system", "content": %q}`, SYSTEM_PROMPT)
 
 	// temp as of now
 	jsonData := fmt.Appendf(nil, `{
@@ -123,25 +124,33 @@ func requestLLM(ac AgentContext) string {
 	}
 	defer resp.Body.Close()
 
-	// body, err := io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	log.Fatalln("Read ALL err:", err)
-	// }
-
-	// fmt.Println("Resp: "+string(body))
-	var res map[string]any
-
-	err = json.NewDecoder(resp.Body).Decode(&res)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		log.Fatalln("Read ALL err:", err)
 	}
 
-	choices := res["choices"].([]any)
-	firstChoice := choices[0].(map[string]any)
-	message := firstChoice["message"].(map[string]any)
-	content := message["content"].(string)
-	fmt.Println("Full message:", content)
+	// fmt.Println("Resp: "+string(body))
+	// var res map[string]interface{}
+
+	// err = json.NewDecoder(resp.Body).Decode(&res)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Println(res)
 	// fmt.Println(res["choices"])
+
+	fmt.Println(string(body))
+
+	var res map[string]interface{}
+	if err := json.Unmarshal(body, &res); err != nil {
+		log.Fatalln("JSON unmarshal error:", err)
+	}
+
+	choices := res["choices"].([]interface{})
+	firstChoice := choices[0].(map[string]interface{})
+	message := firstChoice["message"].(map[string]interface{})
+	content := message["content"]
+	fmt.Println("Full message:", content)
 
 	return ""
 }
