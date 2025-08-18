@@ -71,6 +71,16 @@ type AgentContext struct {
 	tools       string
 }
 
+type TempResponse struct {
+	Name       string     `json:"name"`
+	Parameters Parameters `json:"parameters"`
+}
+
+type Parameters struct {
+	Query   string `json:"query"`
+	Command string `json:"command"`
+}
+
 func StartLoop() {
 	for i := range MAX_STEPS {
 		fmt.Println(i)
@@ -88,8 +98,15 @@ func StartLoop() {
 	// Step 3, if stop, then stop, else add to tool result
 	// Step 4, GO TO Step 1
 
-	requestLLM(ac)
+	response := requestLLM(ac)
 
+	var tr TempResponse
+	err := json.Unmarshal([]byte(response), &tr)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(tr.Name, tr.Parameters.Query, tr.Parameters.Command)
 	// runTerminalCommand()
 }
 
@@ -142,5 +159,5 @@ func requestLLM(ac AgentContext) string {
 	content := message["content"]
 	fmt.Println("Full message:", content)
 
-	return ""
+	return content.(string)
 }

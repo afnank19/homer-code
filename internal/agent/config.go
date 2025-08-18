@@ -59,6 +59,7 @@ func getConfigJson(ac AgentContext) []byte {
 	return json
 }
 
+// This prompt needs to be improved for Agentic Behaviour
 const SYSTEM_PROMPT = `You are an AI terminal agent.
 Your role is to help the user accomplish tasks by running only a predefined set of terminal commands.
 Return your answer as a STRING JSON.
