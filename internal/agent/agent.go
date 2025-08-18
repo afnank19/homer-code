@@ -77,7 +77,7 @@ func StartLoop() {
 	}
 
 	var ac AgentContext = AgentContext{
-		goal:        "what's the git status, summarize",
+		goal:        "run git status",
 		toolResults: "",
 		tools:       "see_command_history",
 	}
@@ -94,19 +94,9 @@ func StartLoop() {
 }
 
 func requestLLM(ac AgentContext) string {
-	llmMsgContent := fmt.Sprintf(`{"role": "system", "content": %q}`, SYSTEM_PROMPT)
+	jsonData := getConfigJson(ac)
 
-	// temp as of now
-	jsonData := fmt.Appendf(nil, `{
-		"model": "openai/gpt-oss-120b",
-		"messages": [
-			%s,
-			{"role": "user", "content": "Users Query: %s"}
-		]
-	}
-	`, llmMsgContent, ac.goal)
-
-	fmt.Println(string(jsonData))
+	fmt.Println(string(jsonData) + "*\n\n")
 
 	req, err := http.NewRequest("POST", GROQ_URL, bytes.NewBuffer(jsonData))
 	if err != nil {
