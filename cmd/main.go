@@ -1,10 +1,11 @@
 package main
 // new ubuntu ssh test
 import (
-	"github.com/afnank19/homer-code/internal/tui"
+	"github.com/afnank19/homer-code/internal/agent"
 )
 
-
 func main() {
-	tui.StartTUI()
+	// tui.StartTUI()
+
+	agent.StartLoop()
 }

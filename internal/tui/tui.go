@@ -89,6 +89,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Batch(tiCmd, vpCmd)
 			}
 
+			// Some stuff to do, maybe even ponder about:
+			// what will happen here is, take input send to LLM,
+			// run Agent loop
+			// PROFIT???
+
 			m.messages = append(m.messages, m.senderStyle.Render("You: ")+m.textarea.Value())
 			m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(strings.Join(m.messages, "\n")))
 			m.textarea.Reset()
