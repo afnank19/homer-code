@@ -12,13 +12,15 @@ import (
 // Some things to note
 // Should definitely specify which shell is being used
 // and with bash -c configuration, i think i wont need to parse the args and create an array
-func runTerminalCommand() {
+func runTerminalCommand(command string) string {
 
-	cmd := exec.Command("bash", "-c", "echo")
+	cmd := exec.Command("bash", "-c", command)
 	out, err := cmd.Output()
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println(string(out))
+
+	return string(out)
 }

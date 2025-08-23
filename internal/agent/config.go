@@ -1,6 +1,9 @@
 package agent
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // place for configuration handling for the agent
 
@@ -28,7 +31,7 @@ func buildConfig(ac AgentContext) RequestConfig {
 	var msgs []RequestMessage
 	var userMsg RequestMessage = RequestMessage{
 		Role:    "user",
-		Content: ac.goal,
+		Content: buildUserContent(ac),
 	}
 	var systemMsg RequestMessage = RequestMessage{
 		Role:    "system",
@@ -48,6 +51,20 @@ func buildConfig(ac AgentContext) RequestConfig {
 	return rc
 }
 
+func buildUserContent(ac AgentContext) string {
+	userContent := "User's Goal: " + ac.goal + "\n"
+
+	if ac.prevToolCalled == "run_terminal_command" {
+		userContent += fmt.Sprintf("You ran tool %s which output: %s\n", ac.prevToolCalled, ac.prevToolOutput)
+	}
+
+	if ac.prevToolCalled == "clarify_query" {
+		userContent += fmt.Sprintf("You asked the user: %s\n", ac.prevToolOutput)
+	}
+
+	return userContent
+}
+
 func getConfigJson(ac AgentContext) []byte {
 	rc := buildConfig(ac)
 
@@ -62,7 +79,7 @@ func getConfigJson(ac AgentContext) []byte {
 // This prompt needs to be improved for Agentic Behaviour
 const SYSTEM_PROMPT = `You are an AI terminal agent.
 Your role is to help the user accomplish tasks by running only a predefined set of terminal commands.
-Return your answer as a STRING JSON.
+Return your answer as JSON STRING.
 
 Rules & Behavior
 
@@ -91,6 +108,16 @@ Rules & Behavior
    - Do not STRAY from the following JSON structure:
    TOOL USE: { "name": "run_terminal_command", "parameters": { "command": "<command_string>" } }
    CLARIFYING QUESTION OR ERROR: { "name": "clarify_query", "parameters": { "query": "<clarifying_question>" } }
+
+7. Multiple Steps
+   - There is a chance there will be multiple steps to fulfill the users query. You will be given the results of your tool calls, and based on that new context, plan your next step.
+   - For example: If you are told to 'run "ls" and summarize', then you will first call the "run_terminal_command" tool, then you will be given the result of your tool call, and then from that you will summarize and then talk to the user through the "talk_to_user" user tool. Finally, you will call "task_done" tool to mark your task done. 
+
+Tools & Format:
+TOOL USE: { "name": "run_terminal_command", "parameters": { "command": "<command_string>" } }
+CLARIFYING QUESTION OR ERROR: { "name": "clarify_query", "parameters": { "query": "<clarifying_question>" } }
+TALK TO USER: { "name": "talk_to_user", "parameters": { "query": "<your-result>" } }
+TASK DONE: { "name": "task_done", "parameters": { "query": "Task completed" } }
 
 Workflow
 

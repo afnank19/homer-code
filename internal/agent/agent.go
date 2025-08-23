@@ -66,9 +66,9 @@ type UserMessage struct {
 // probably will be other datatypes, especially for tools, then have a message builder that takes this struct,
 // and creates a message ready for the LLM
 type AgentContext struct {
-	goal        string
-	toolResults string
-	tools       string
+	goal           string
+	prevToolOutput string
+	prevToolCalled string
 }
 
 type TempResponse struct {
@@ -82,14 +82,8 @@ type Parameters struct {
 }
 
 func StartLoop() {
-	for i := range MAX_STEPS {
-		fmt.Println(i)
-	}
-
 	var ac AgentContext = AgentContext{
-		goal:        "run git status",
-		toolResults: "",
-		tools:       "see_command_history",
+		goal: "run ls in ./cmd directory and then summarize",
 	}
 
 	// Alright so here is how it will go
@@ -98,22 +92,38 @@ func StartLoop() {
 	// Step 3, if stop, then stop, else add to tool result
 	// Step 4, GO TO Step 1
 
-	response := requestLLM(ac)
+	for i := range MAX_STEPS {
+		fmt.Println(i)
+		response := requestLLM(ac)
 
-	var tr TempResponse
-	err := json.Unmarshal([]byte(response), &tr)
-	if err != nil {
-		panic(err)
+		var tr TempResponse
+		err := json.Unmarshal([]byte(response), &tr)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("DEBUG LOG: ", tr.Name, tr.Parameters.Query, tr.Parameters.Command)
+
+		if tr.Name == "clarify_query" {
+			fmt.Println("Homer:", tr.Parameters.Query)
+			ac.prevToolCalled = tr.Name
+			ac.prevToolOutput = tr.Parameters.Query
+		}
+
+		if tr.Name == "run_terminal_command" {
+			output := runTerminalCommand(tr.Parameters.Command)
+			ac.prevToolCalled = tr.Name
+			ac.prevToolOutput = output
+			fmt.Println("Tool Output: ", output)
+		}
 	}
-
-	fmt.Println(tr.Name, tr.Parameters.Query, tr.Parameters.Command)
 	// runTerminalCommand()
 }
 
 func requestLLM(ac AgentContext) string {
 	jsonData := getConfigJson(ac)
 
-	fmt.Println(string(jsonData) + "*\n\n")
+	// fmt.Println(string(jsonData) + "*\n\n")
 
 	req, err := http.NewRequest("POST", GROQ_URL, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -157,7 +167,7 @@ func requestLLM(ac AgentContext) string {
 	firstChoice := choices[0].(map[string]interface{})
 	message := firstChoice["message"].(map[string]interface{})
 	content := message["content"]
-	fmt.Println("Full message:", content)
+	// fmt.Println("Full message:", content)
 
 	return content.(string)
 }
