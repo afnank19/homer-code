@@ -55,7 +55,7 @@ func Symphony() {
 	fmt.Println("It has begun")
 }
 
-const MAX_STEPS = 3 // This is probably for when it fails, maybe, idk have to architect it better
+const MAX_STEPS = 5 // This is probably for when it fails, maybe, idk have to architect it better
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 type UserMessage struct {
@@ -115,6 +115,17 @@ func StartLoop() {
 			ac.prevToolCalled = tr.Name
 			ac.prevToolOutput = output
 			fmt.Println("Tool Output: ", output)
+		}
+
+		if tr.Name == "talk_to_user" {
+			fmt.Println("Homer:", tr.Parameters.Query)
+			ac.prevToolCalled = tr.Name
+			ac.prevToolOutput = tr.Parameters.Query
+		}
+
+		if tr.Name == "task_done" {
+			fmt.Println("Task Completed")
+			break
 		}
 	}
 	// runTerminalCommand()

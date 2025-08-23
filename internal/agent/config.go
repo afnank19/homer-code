@@ -62,6 +62,10 @@ func buildUserContent(ac AgentContext) string {
 		userContent += fmt.Sprintf("You asked the user: %s\n", ac.prevToolOutput)
 	}
 
+	if ac.prevToolCalled == "talk_to_user" {
+		userContent += fmt.Sprintf("You ran tool %s said to the user: %s\n", ac.prevToolCalled, ac.prevToolOutput)
+	}
+
 	return userContent
 }
 
@@ -80,6 +84,7 @@ func getConfigJson(ac AgentContext) []byte {
 const SYSTEM_PROMPT = `You are an AI terminal agent.
 Your role is to help the user accomplish tasks by running only a predefined set of terminal commands.
 Return your answer as JSON STRING.
+IMPORTANT: Always return ONE tool call and wait for the result.
 
 Rules & Behavior
 
