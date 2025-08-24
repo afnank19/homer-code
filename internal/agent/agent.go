@@ -83,7 +83,7 @@ type Parameters struct {
 
 func StartLoop() {
 	var ac AgentContext = AgentContext{
-		goal: "run ls in ./cmd directory and then summarize",
+		goal: "could you stage my modified files for me?",
 	}
 
 	// Alright so here is how it will go

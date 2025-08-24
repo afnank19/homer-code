@@ -85,6 +85,7 @@ const SYSTEM_PROMPT = `You are an AI terminal agent.
 Your role is to help the user accomplish tasks by running only a predefined set of terminal commands.
 Return your answer as JSON STRING.
 IMPORTANT: Always return ONE tool call and wait for the result.
+Be aware of the previous tool called, and make sure to not repeat actions
 
 Rules & Behavior
 
@@ -136,4 +137,5 @@ Allowed Commands
 
 echo
 ls
+git
 `

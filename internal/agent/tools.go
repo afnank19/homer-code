@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"fmt"
 	"os/exec"
 )
 
@@ -20,7 +19,10 @@ func runTerminalCommand(command string) string {
 		panic(err)
 	}
 
-	fmt.Println(string(out))
+	// fmt.Println(string(out))
+	if string(out) == "" {
+		return "command ran successfully"
+	}
 
 	return string(out)
 }
