@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 type GroqChatCompletionResponse struct {
@@ -55,7 +56,7 @@ func Symphony() {
 	fmt.Println("It has begun")
 }
 
-const MAX_STEPS = 3 // This is probably for when it fails, maybe, idk have to architect it better
+const MAX_STEPS = 5 // This is probably for when it fails, maybe, idk have to architect it better
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 type UserMessage struct {
@@ -66,9 +67,17 @@ type UserMessage struct {
 // probably will be other datatypes, especially for tools, then have a message builder that takes this struct,
 // and creates a message ready for the LLM
 type AgentContext struct {
-	goal        string
-	toolResults string
-	tools       string
+	goal string
+	// prevToolOutput string
+	// prevToolCalled string
+	// prevToolCmd    string
+	history []toolHistory
+}
+
+type toolHistory struct {
+	prevToolOutput string
+	prevToolCalled string
+	prevToolCmd    string
 }
 
 type TempResponse struct {
@@ -82,14 +91,9 @@ type Parameters struct {
 }
 
 func StartLoop() {
-	for i := range MAX_STEPS {
-		fmt.Println(i)
-	}
-
 	var ac AgentContext = AgentContext{
-		goal:        "run git status",
-		toolResults: "",
-		tools:       "see_command_history",
+		goal:    "",
+		history: []toolHistory{},
 	}
 
 	// Alright so here is how it will go
@@ -98,22 +102,54 @@ func StartLoop() {
 	// Step 3, if stop, then stop, else add to tool result
 	// Step 4, GO TO Step 1
 
-	response := requestLLM(ac)
+	for i := range MAX_STEPS {
+		fmt.Println(i)
+		response := requestLLM(ac)
 
-	var tr TempResponse
-	err := json.Unmarshal([]byte(response), &tr)
-	if err != nil {
-		panic(err)
+		var tr TempResponse
+		err := json.Unmarshal([]byte(response), &tr)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("DEBUG LOG: ", tr.Name, tr.Parameters.Query, tr.Parameters.Command)
+
+		var tH toolHistory
+		if tr.Name == "clarify_query" {
+			fmt.Println("Homer:", tr.Parameters.Query)
+			tH.prevToolCalled = tr.Name
+			tH.prevToolOutput = tr.Parameters.Query
+			ac.history = append(ac.history, tH)
+		}
+
+		if tr.Name == "run_terminal_command" {
+			output := runTerminalCommand(tr.Parameters.Command)
+			tH.prevToolCmd = tr.Parameters.Command
+			tH.prevToolCalled = tr.Name
+			tH.prevToolOutput = output
+			ac.history = append(ac.history, tH)
+			fmt.Println("Tool Output: ", output)
+		}
+
+		if tr.Name == "talk_to_user" {
+			fmt.Println("Homer:", tr.Parameters.Query)
+			tH.prevToolCalled = tr.Name
+			tH.prevToolOutput = tr.Parameters.Query
+			ac.history = append(ac.history, tH)
+		}
+
+		if tr.Name == "task_done" {
+			fmt.Println("Task Completed")
+			break
+		}
 	}
-
-	fmt.Println(tr.Name, tr.Parameters.Query, tr.Parameters.Command)
 	// runTerminalCommand()
 }
 
 func requestLLM(ac AgentContext) string {
 	jsonData := getConfigJson(ac)
 
-	fmt.Println(string(jsonData) + "*\n\n")
+	// fmt.Println(string(jsonData) + "*\n\n")
 
 	req, err := http.NewRequest("POST", GROQ_URL, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -157,7 +193,12 @@ func requestLLM(ac AgentContext) string {
 	firstChoice := choices[0].(map[string]interface{})
 	message := firstChoice["message"].(map[string]interface{})
 	content := message["content"]
-	fmt.Println("Full message:", content)
+	// fmt.Println("Full message:", content)
 
 	return content.(string)
+}
+
+func TestFunc(goal string) {
+	// fmt.Println(goal)
+	time.Sleep(1 * time.Second)
 }
