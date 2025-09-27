@@ -52,18 +52,20 @@ func buildConfig(ac AgentContext) RequestConfig {
 }
 
 func buildUserContent(ac AgentContext) string {
-	userContent := "User's Goal: " + ac.goal + "\n"
+	userContent := "User's Goal: " + ac.goal + "\nHistory of the ran commands are as follows:\n"
 
-	if ac.prevToolCalled == "run_terminal_command" {
-		userContent += fmt.Sprintf("You ran tool %s which output: %s\n", ac.prevToolCalled, ac.prevToolOutput)
-	}
+	for _, h := range ac.history {
+		if h.prevToolCalled == "run_terminal_command" {
+			userContent += fmt.Sprintf("You ran tool '%s' with command '%s' which output: '%s'\n", h.prevToolCalled, h.prevToolCmd, h.prevToolOutput)
+		}
 
-	if ac.prevToolCalled == "clarify_query" {
-		userContent += fmt.Sprintf("You asked the user: %s\n", ac.prevToolOutput)
-	}
+		if h.prevToolCalled == "clarify_query" {
+			userContent += fmt.Sprintf("You asked the user: %s\n", h.prevToolOutput)
+		}
 
-	if ac.prevToolCalled == "talk_to_user" {
-		userContent += fmt.Sprintf("You ran tool %s said to the user: %s\n", ac.prevToolCalled, ac.prevToolOutput)
+		if h.prevToolCalled == "talk_to_user" {
+			userContent += fmt.Sprintf("You ran tool %s said to the user: %s\n", h.prevToolCalled, h.prevToolOutput)
+		}
 	}
 
 	return userContent
@@ -85,7 +87,9 @@ const SYSTEM_PROMPT = `You are an AI terminal agent.
 Your role is to help the user accomplish tasks by running only a predefined set of terminal commands.
 Return your answer as JSON STRING.
 IMPORTANT: Always return ONE tool call and wait for the result.
+IMPORTANT: If the User's Goal has been met, then task_done, do not repeat actions 
 Be aware of the previous tool called, and make sure to not repeat actions
+"You" from the user refers to you.
 
 Rules & Behavior
 

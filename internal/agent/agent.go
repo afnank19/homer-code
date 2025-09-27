@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 type GroqChatCompletionResponse struct {
@@ -66,9 +67,17 @@ type UserMessage struct {
 // probably will be other datatypes, especially for tools, then have a message builder that takes this struct,
 // and creates a message ready for the LLM
 type AgentContext struct {
-	goal           string
+	goal string
+	// prevToolOutput string
+	// prevToolCalled string
+	// prevToolCmd    string
+	history []toolHistory
+}
+
+type toolHistory struct {
 	prevToolOutput string
 	prevToolCalled string
+	prevToolCmd    string
 }
 
 type TempResponse struct {
@@ -83,7 +92,8 @@ type Parameters struct {
 
 func StartLoop() {
 	var ac AgentContext = AgentContext{
-		goal: "could you stage my modified files for me?",
+		goal:    "",
+		history: []toolHistory{},
 	}
 
 	// Alright so here is how it will go
@@ -104,23 +114,28 @@ func StartLoop() {
 
 		fmt.Println("DEBUG LOG: ", tr.Name, tr.Parameters.Query, tr.Parameters.Command)
 
+		var tH toolHistory
 		if tr.Name == "clarify_query" {
 			fmt.Println("Homer:", tr.Parameters.Query)
-			ac.prevToolCalled = tr.Name
-			ac.prevToolOutput = tr.Parameters.Query
+			tH.prevToolCalled = tr.Name
+			tH.prevToolOutput = tr.Parameters.Query
+			ac.history = append(ac.history, tH)
 		}
 
 		if tr.Name == "run_terminal_command" {
 			output := runTerminalCommand(tr.Parameters.Command)
-			ac.prevToolCalled = tr.Name
-			ac.prevToolOutput = output
+			tH.prevToolCmd = tr.Parameters.Command
+			tH.prevToolCalled = tr.Name
+			tH.prevToolOutput = output
+			ac.history = append(ac.history, tH)
 			fmt.Println("Tool Output: ", output)
 		}
 
 		if tr.Name == "talk_to_user" {
 			fmt.Println("Homer:", tr.Parameters.Query)
-			ac.prevToolCalled = tr.Name
-			ac.prevToolOutput = tr.Parameters.Query
+			tH.prevToolCalled = tr.Name
+			tH.prevToolOutput = tr.Parameters.Query
+			ac.history = append(ac.history, tH)
 		}
 
 		if tr.Name == "task_done" {
@@ -181,4 +196,9 @@ func requestLLM(ac AgentContext) string {
 	// fmt.Println("Full message:", content)
 
 	return content.(string)
+}
+
+func TestFunc(goal string) {
+	// fmt.Println(goal)
+	time.Sleep(1 * time.Second)
 }

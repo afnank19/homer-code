@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/afnank19/homer-code/internal/agent"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -12,21 +13,23 @@ import (
 )
 
 type model struct {
-    hello string
+	hello       string
 	viewport    viewport.Model
 	messages    []string
 	textarea    textarea.Model
 	senderStyle lipgloss.Style
 }
 
+type TestProcessMsg string
+
 const gap = "\n\n"
 
 func StartTUI() {
 	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
-    if _, err := p.Run(); err != nil {
-        fmt.Printf("Alas, there's been an error: %v", err)
-        os.Exit(1)
-    }
+	if _, err := p.Run(); err != nil {
+		fmt.Printf("Alas, there's been an error: %v", err)
+		os.Exit(1)
+	}
 }
 
 func initialModel() model {
@@ -47,20 +50,19 @@ func initialModel() model {
 
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 	return model{
-		hello: "blah",
-		viewport: vp,
-		textarea: ta,
+		hello:       "blah",
+		viewport:    vp,
+		textarea:    ta,
 		senderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
 	}
 }
 
 func (m model) Init() tea.Cmd {
-    return nil
+	return nil
 }
 
-
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-   var (
+	var (
 		tiCmd tea.Cmd
 		vpCmd tea.Cmd
 	)
@@ -79,6 +81,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(strings.Join(m.messages, "\n")))
 		}
 		m.viewport.GotoBottom()
+
+	case TestProcessMsg:
+		m.messages = append(m.messages, m.senderStyle.Render(string(msg)))
+		m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(strings.Join(m.messages, "\n")))
+		m.textarea.Reset()
+		m.viewport.GotoBottom()
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -95,15 +103,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// PROFIT???
 
 			m.messages = append(m.messages, m.senderStyle.Render("You: ")+m.textarea.Value())
+			m.messages = append(m.messages, m.senderStyle.Render("HOMER: ")+"PROCESSING")
 			m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(strings.Join(m.messages, "\n")))
 			m.textarea.Reset()
 			m.viewport.GotoBottom()
+			return m, processMessage()
 		}
 
-	// We handle errors just like any other message
-	// case errMsg:
-	// 	m.err = msg
-	// 	return m, nil
+		// We handle errors just like any other message
+		// case errMsg:
+		// 	m.err = msg
+		// 	return m, nil
 	}
 
 	return m, tea.Batch(tiCmd, vpCmd)
@@ -112,10 +122,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	// m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(strings.Join(m.messages, "\n")))
 
-    return fmt.Sprintf(
+	return fmt.Sprintf(
 		"%s%s%s",
 		m.viewport.View(),
 		gap,
 		lipgloss.NewStyle().Border(lipgloss.NormalBorder()).Render(m.textarea.View()),
 	)
+}
+
+func processMessage() tea.Cmd {
+	return func() tea.Msg {
+		agent.TestFunc("lmao")
+		return TestProcessMsg("Done processing")
+	}
 }
