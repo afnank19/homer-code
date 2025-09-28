@@ -13,11 +13,13 @@ import (
 )
 
 type model struct {
-	hello       string
-	viewport    viewport.Model
-	messages    []string
-	textarea    textarea.Model
-	senderStyle lipgloss.Style
+	hello        string
+	viewport     viewport.Model
+	messages     []string
+	textarea     textarea.Model
+	senderStyle  lipgloss.Style
+	agentRunning bool
+	agentSteps   int
 }
 
 type TestProcessMsg string
@@ -50,10 +52,12 @@ func initialModel() model {
 
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 	return model{
-		hello:       "blah",
-		viewport:    vp,
-		textarea:    ta,
-		senderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
+		hello:        "blah",
+		viewport:     vp,
+		textarea:     ta,
+		senderStyle:  lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
+		agentRunning: false,
+		agentSteps:   0,
 	}
 }
 
@@ -85,8 +89,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case TestProcessMsg:
 		m.messages = append(m.messages, m.senderStyle.Render(string(msg)))
 		m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(strings.Join(m.messages, "\n")))
-		m.textarea.Reset()
+		// m.textarea.Reset()
+		if m.agentSteps == 2 {
+			m.agentRunning = false
+			m.agentSteps = 0
+			return m, nil
+		}
 		m.viewport.GotoBottom()
+		if m.agentSteps < 2 {
+			m.agentSteps++
+			return m, processMessage()
+		}
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -102,6 +115,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// run Agent loop
 			// PROFIT???
 
+			if m.agentRunning {
+				return m, tea.Batch(tiCmd, vpCmd)
+			}
+
+			m.agentRunning = true
 			m.messages = append(m.messages, m.senderStyle.Render("You: ")+m.textarea.Value())
 			m.messages = append(m.messages, m.senderStyle.Render("HOMER: ")+"PROCESSING")
 			m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(strings.Join(m.messages, "\n")))
@@ -132,7 +150,34 @@ func (m model) View() string {
 
 func processMessage() tea.Cmd {
 	return func() tea.Msg {
-		agent.TestFunc("lmao")
-		return TestProcessMsg("Done processing")
+		var ac agent.AgentContext = agent.AgentContext{
+			Goal:    "can you stage my files for me",
+			History: []agent.ToolHistory{},
+		}
+
+		ac = agent.RunAgentIteration(ac)
+
+		h := ac.History[len(ac.History)-1] // latest item
+
+		var userContent string
+		switch h.PrevToolCalled {
+		case "run_terminal_command":
+			userContent += fmt.Sprintf(
+				"Agent ran tool '%s' with command '%s' which output: '%s'\n",
+				h.PrevToolCalled, h.PrevToolCmd, h.PrevToolOutput,
+			)
+
+		case "clarify_query":
+			userContent += fmt.Sprintf("Agent asked the user: %s\n", h.PrevToolOutput)
+
+		case "talk_to_user":
+			userContent += fmt.Sprintf(
+				"Agent ran tool %s said to the user: %s\n",
+				h.PrevToolCalled, h.PrevToolOutput,
+			)
+		}
+
+		// agent.TestFunc("lmao")
+		return TestProcessMsg(userContent)
 	}
 }

@@ -67,17 +67,20 @@ type UserMessage struct {
 // probably will be other datatypes, especially for tools, then have a message builder that takes this struct,
 // and creates a message ready for the LLM
 type AgentContext struct {
-	goal string
-	// prevToolOutput string
-	// prevToolCalled string
-	// prevToolCmd    string
-	history []toolHistory
+	Goal string
+	// PrevToolOutput string
+	// PrevToolCalled string
+	// PrevToolCmd    string
+	History []ToolHistory
 }
 
-type toolHistory struct {
-	prevToolOutput string
-	prevToolCalled string
-	prevToolCmd    string
+type ToolHistory struct {
+	PrevToolOutput string
+	PrevToolCalled string
+	PrevToolCmd    string
+}
+
+type AgentResponseInterface struct {
 }
 
 type TempResponse struct {
@@ -90,10 +93,11 @@ type Parameters struct {
 	Command string `json:"command"`
 }
 
-func StartLoop() {
+// Mock loop
+func StartLoop(goal string) {
 	var ac AgentContext = AgentContext{
-		goal:    "",
-		history: []toolHistory{},
+		Goal:    goal,
+		History: []ToolHistory{},
 	}
 
 	// Alright so here is how it will go
@@ -114,28 +118,28 @@ func StartLoop() {
 
 		fmt.Println("DEBUG LOG: ", tr.Name, tr.Parameters.Query, tr.Parameters.Command)
 
-		var tH toolHistory
+		var tH ToolHistory
 		if tr.Name == "clarify_query" {
 			fmt.Println("Homer:", tr.Parameters.Query)
-			tH.prevToolCalled = tr.Name
-			tH.prevToolOutput = tr.Parameters.Query
-			ac.history = append(ac.history, tH)
+			tH.PrevToolCalled = tr.Name
+			tH.PrevToolOutput = tr.Parameters.Query
+			ac.History = append(ac.History, tH)
 		}
 
 		if tr.Name == "run_terminal_command" {
 			output := runTerminalCommand(tr.Parameters.Command)
-			tH.prevToolCmd = tr.Parameters.Command
-			tH.prevToolCalled = tr.Name
-			tH.prevToolOutput = output
-			ac.history = append(ac.history, tH)
+			tH.PrevToolCmd = tr.Parameters.Command
+			tH.PrevToolCalled = tr.Name
+			tH.PrevToolOutput = output
+			ac.History = append(ac.History, tH)
 			fmt.Println("Tool Output: ", output)
 		}
 
 		if tr.Name == "talk_to_user" {
 			fmt.Println("Homer:", tr.Parameters.Query)
-			tH.prevToolCalled = tr.Name
-			tH.prevToolOutput = tr.Parameters.Query
-			ac.history = append(ac.history, tH)
+			tH.PrevToolCalled = tr.Name
+			tH.PrevToolOutput = tr.Parameters.Query
+			ac.History = append(ac.History, tH)
 		}
 
 		if tr.Name == "task_done" {
@@ -144,6 +148,49 @@ func StartLoop() {
 		}
 	}
 	// runTerminalCommand()
+}
+
+func RunAgentIteration(ac AgentContext) AgentContext {
+	response := requestLLM(ac)
+
+	var tr TempResponse
+	err := json.Unmarshal([]byte(response), &tr)
+	if err != nil {
+		panic(err)
+	}
+
+	// fmt.Println("DEBUG LOG: ", tr.Name, tr.Parameters.Query, tr.Parameters.Command)
+
+	var tH ToolHistory
+	if tr.Name == "clarify_query" {
+		// fmt.Println("Homer:", tr.Parameters.Query)
+		tH.PrevToolCalled = tr.Name
+		tH.PrevToolOutput = tr.Parameters.Query
+		ac.History = append(ac.History, tH)
+	}
+
+	if tr.Name == "run_terminal_command" {
+		output := runTerminalCommand(tr.Parameters.Command)
+		tH.PrevToolCmd = tr.Parameters.Command
+		tH.PrevToolCalled = tr.Name
+		tH.PrevToolOutput = output
+		ac.History = append(ac.History, tH)
+		// fmt.Println("Tool Output: ", output)
+	}
+
+	if tr.Name == "talk_to_user" {
+		fmt.Println("Homer:", tr.Parameters.Query)
+		tH.PrevToolCalled = tr.Name
+		tH.PrevToolOutput = tr.Parameters.Query
+		ac.History = append(ac.History, tH)
+	}
+
+	if tr.Name == "task_done" {
+		// panic("task completed")
+		fmt.Println("Task Completed")
+	}
+
+	return ac
 }
 
 func requestLLM(ac AgentContext) string {
@@ -182,7 +229,7 @@ func requestLLM(ac AgentContext) string {
 	// fmt.Println(res)
 	// fmt.Println(res["choices"])
 
-	fmt.Println(string(body))
+	// fmt.Println(string(body))
 
 	var res map[string]interface{}
 	if err := json.Unmarshal(body, &res); err != nil {

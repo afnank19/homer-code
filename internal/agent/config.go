@@ -52,19 +52,19 @@ func buildConfig(ac AgentContext) RequestConfig {
 }
 
 func buildUserContent(ac AgentContext) string {
-	userContent := "User's Goal: " + ac.goal + "\nHistory of the ran commands are as follows:\n"
+	userContent := "User's Goal: " + ac.Goal + "\nHistory of the ran commands are as follows:\n"
 
-	for _, h := range ac.history {
-		if h.prevToolCalled == "run_terminal_command" {
-			userContent += fmt.Sprintf("You ran tool '%s' with command '%s' which output: '%s'\n", h.prevToolCalled, h.prevToolCmd, h.prevToolOutput)
+	for _, h := range ac.History {
+		if h.PrevToolCalled == "run_terminal_command" {
+			userContent += fmt.Sprintf("You ran tool '%s' with command '%s' which output: '%s'\n", h.PrevToolCalled, h.PrevToolCmd, h.PrevToolOutput)
 		}
 
-		if h.prevToolCalled == "clarify_query" {
-			userContent += fmt.Sprintf("You asked the user: %s\n", h.prevToolOutput)
+		if h.PrevToolCalled == "clarify_query" {
+			userContent += fmt.Sprintf("You asked the user: %s\n", h.PrevToolOutput)
 		}
 
-		if h.prevToolCalled == "talk_to_user" {
-			userContent += fmt.Sprintf("You ran tool %s said to the user: %s\n", h.prevToolCalled, h.prevToolOutput)
+		if h.PrevToolCalled == "talk_to_user" {
+			userContent += fmt.Sprintf("You ran tool %s said to the user: %s\n", h.PrevToolCalled, h.PrevToolOutput)
 		}
 	}
 
