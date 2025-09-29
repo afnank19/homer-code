@@ -151,6 +151,7 @@ func StartLoop(goal string) {
 }
 
 func RunAgentIteration(ac AgentContext) AgentContext {
+	log.Println("RAI HISTORY:", ac.History)
 	response := requestLLM(ac)
 
 	var tr TempResponse
@@ -187,7 +188,10 @@ func RunAgentIteration(ac AgentContext) AgentContext {
 
 	if tr.Name == "task_done" {
 		// panic("task completed")
-		fmt.Println("Task Completed")
+		tH.PrevToolCalled = tr.Name
+		tH.PrevToolOutput = tr.Parameters.Query
+		ac.History = append(ac.History, tH)
+		// fmt.Println("Task Completed")
 	}
 
 	return ac

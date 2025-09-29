@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -20,9 +21,14 @@ type model struct {
 	senderStyle  lipgloss.Style
 	agentRunning bool
 	agentSteps   int
+	agentCtx     agent.AgentContext
 }
 
-type TestProcessMsg string
+type TestProcessMsg struct {
+	Message           string
+	AgentSignal       int // -1 means the agent has done the task
+	agentCtxTransport agent.AgentContext
+}
 
 const gap = "\n\n"
 
@@ -58,6 +64,10 @@ func initialModel() model {
 		senderStyle:  lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
 		agentRunning: false,
 		agentSteps:   0,
+		agentCtx: agent.AgentContext{
+			Goal:    "",
+			History: []agent.ToolHistory{},
+		},
 	}
 }
 
@@ -87,10 +97,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewport.GotoBottom()
 
 	case TestProcessMsg:
-		m.messages = append(m.messages, m.senderStyle.Render(string(msg)))
+		m.messages = append(m.messages, m.senderStyle.Render(string(msg.Message)))
+		m.agentCtx = msg.agentCtxTransport
 		m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(strings.Join(m.messages, "\n")))
 		// m.textarea.Reset()
-		if m.agentSteps == 2 {
+		if m.agentSteps == 2 || msg.AgentSignal == -1 {
 			m.agentRunning = false
 			m.agentSteps = 0
 			return m, nil
@@ -98,7 +109,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewport.GotoBottom()
 		if m.agentSteps < 2 {
 			m.agentSteps++
-			return m, processMessage()
+			log.Println("MODEL ITR:", m.agentCtx.History)
+			return m, processMessage(m.agentCtx)
 		}
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -122,10 +134,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.agentRunning = true
 			m.messages = append(m.messages, m.senderStyle.Render("You: ")+m.textarea.Value())
 			m.messages = append(m.messages, m.senderStyle.Render("HOMER: ")+"PROCESSING")
+			m.agentCtx.Goal = "can you stage my files for me"
 			m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(strings.Join(m.messages, "\n")))
 			m.textarea.Reset()
 			m.viewport.GotoBottom()
-			return m, processMessage()
+			return m, processMessage(m.agentCtx)
 		}
 
 		// We handle errors just like any other message
@@ -148,18 +161,23 @@ func (m model) View() string {
 	)
 }
 
-func processMessage() tea.Cmd {
+func processMessage(ac agent.AgentContext) tea.Cmd {
 	return func() tea.Msg {
-		var ac agent.AgentContext = agent.AgentContext{
-			Goal:    "can you stage my files for me",
-			History: []agent.ToolHistory{},
-		}
+		// var ac agent.AgentContext = agent.AgentContext{
+		// 	Goal:    "can you stage my files for me",
+		// 	History: []agent.ToolHistory{},
+		// }
+
+		// log.Println(ctx)
 
 		ac = agent.RunAgentIteration(ac)
+		log.Println("PM AC PTR HISTORY:", ac.History)
 
 		h := ac.History[len(ac.History)-1] // latest item
+		log.Println("PM HISTORY:", h)
 
 		var userContent string
+		var signal int = 0
 		switch h.PrevToolCalled {
 		case "run_terminal_command":
 			userContent += fmt.Sprintf(
@@ -175,9 +193,17 @@ func processMessage() tea.Cmd {
 				"Agent ran tool %s said to the user: %s\n",
 				h.PrevToolCalled, h.PrevToolOutput,
 			)
+
+		case "task_done":
+			userContent += "Task Done"
+			signal = -1
 		}
 
 		// agent.TestFunc("lmao")
-		return TestProcessMsg(userContent)
+		return TestProcessMsg{
+			Message:           userContent,
+			AgentSignal:       signal,
+			agentCtxTransport: ac,
+		}
 	}
 }

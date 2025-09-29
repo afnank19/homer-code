@@ -1,0 +1,106 @@
+debug 2025/09/29 19:33:13 DEBUG BEGIN
+debug 2025/09/29 19:34:11 DEBUG BEGIN
+debug 2025/09/29 19:34:13 []
+debug 2025/09/29 19:34:14 []
+debug 2025/09/29 19:34:14 []
+debug 2025/09/29 19:38:38 DEBUG BEGIN
+debug 2025/09/29 19:38:40 
+debug 2025/09/29 19:38:40 []
+debug 2025/09/29 19:38:41 1
+debug 2025/09/29 19:38:41 []
+debug 2025/09/29 19:38:42 2
+debug 2025/09/29 19:38:42 []
+debug 2025/09/29 19:42:42 --- DEBUG BEGIN ---
+debug 2025/09/29 19:42:44 &{can you stage my files for me []}
+debug 2025/09/29 19:42:44 []
+debug 2025/09/29 19:42:45 &{can you stage my files for me []}
+debug 2025/09/29 19:42:45 []
+debug 2025/09/29 19:42:46 &{can you stage my files for me []}
+debug 2025/09/29 19:42:46 []
+debug 2025/09/29 19:42:48 --- PROGRAM END ---
+debug 2025/09/29 19:43:46 --- DEBUG BEGIN ---
+debug 2025/09/29 19:43:48 --- PROGRAM END ---
+debug 2025/09/29 19:44:00 --- DEBUG BEGIN ---
+debug 2025/09/29 19:44:03 &{can you stage my files for me []}
+debug 2025/09/29 19:44:03 []
+debug 2025/09/29 19:44:04 PM HISTORY: {command ran successfully run_terminal_command git add -A}
+debug 2025/09/29 19:44:04 &{can you stage my files for me []}
+debug 2025/09/29 19:44:04 []
+debug 2025/09/29 19:44:04 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 19:44:04 &{can you stage my files for me []}
+debug 2025/09/29 19:44:04 []
+debug 2025/09/29 19:44:05 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 19:44:07 --- PROGRAM END ---
+debug 2025/09/29 19:48:14 --- DEBUG BEGIN ---
+debug 2025/09/29 19:48:17 []
+debug 2025/09/29 19:48:17 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 19:48:17 []
+debug 2025/09/29 19:48:18 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 19:48:18 []
+debug 2025/09/29 19:48:18 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 19:48:22 --- PROGRAM END ---
+debug 2025/09/29 19:49:14 --- DEBUG BEGIN ---
+debug 2025/09/29 19:49:15 []
+debug 2025/09/29 19:49:16 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 19:49:16 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 19:49:16 []
+debug 2025/09/29 19:49:17 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 19:49:17 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 19:49:17 []
+debug 2025/09/29 19:49:17 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 19:49:17 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 19:49:19 --- PROGRAM END ---
+debug 2025/09/29 19:53:37 --- DEBUG BEGIN ---
+debug 2025/09/29 19:53:40 RAI HISTORY: []
+debug 2025/09/29 19:53:41 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 19:53:41 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 19:53:41 MODEL ITR: []
+debug 2025/09/29 19:53:41 RAI HISTORY: []
+debug 2025/09/29 19:53:41 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add -A}]
+debug 2025/09/29 19:53:41 PM HISTORY: {command ran successfully run_terminal_command git add -A}
+debug 2025/09/29 19:53:41 MODEL ITR: []
+debug 2025/09/29 19:53:41 RAI HISTORY: []
+debug 2025/09/29 19:53:42 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 19:53:42 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 19:53:43 --- PROGRAM END ---
+debug 2025/09/29 20:01:33 --- DEBUG BEGIN ---
+debug 2025/09/29 20:01:35 RAI HISTORY: []
+debug 2025/09/29 20:01:36 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:01:36 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 20:01:36 MODEL ITR: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:01:36 RAI HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:01:36 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:01:36 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 20:01:36 MODEL ITR: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:01:36 RAI HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:01:37 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:01:37 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 20:01:41 --- PROGRAM END ---
+debug 2025/09/29 20:03:02 --- DEBUG BEGIN ---
+debug 2025/09/29 20:03:03 RAI HISTORY: []
+debug 2025/09/29 20:03:04 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:03:04 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 20:03:04 MODEL ITR: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:03:04 RAI HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:15:29 --- DEBUG BEGIN ---
+debug 2025/09/29 20:15:31 RAI HISTORY: []
+debug 2025/09/29 20:15:35 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:15:35 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 20:15:35 MODEL ITR: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:15:35 RAI HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:15:38 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .} {Task completed task_done }]
+debug 2025/09/29 20:15:38 PM HISTORY: {Task completed task_done }
+debug 2025/09/29 20:15:38 MODEL ITR: [{command ran successfully run_terminal_command git add .} {Task completed task_done }]
+debug 2025/09/29 20:15:38 RAI HISTORY: [{command ran successfully run_terminal_command git add .} {Task completed task_done }]
+debug 2025/09/29 20:15:39 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .} {Task completed task_done } {Task completed task_done }]
+debug 2025/09/29 20:15:39 PM HISTORY: {Task completed task_done }
+debug 2025/09/29 20:15:43 --- PROGRAM END ---
+debug 2025/09/29 20:18:07 --- DEBUG BEGIN ---
+debug 2025/09/29 20:18:10 RAI HISTORY: []
+debug 2025/09/29 20:18:10 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:18:10 PM HISTORY: {command ran successfully run_terminal_command git add .}
+debug 2025/09/29 20:18:10 MODEL ITR: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:18:10 RAI HISTORY: [{command ran successfully run_terminal_command git add .}]
+debug 2025/09/29 20:18:11 PM AC PTR HISTORY: [{command ran successfully run_terminal_command git add .} {Task completed task_done }]
+debug 2025/09/29 20:18:11 PM HISTORY: {Task completed task_done }
+debug 2025/09/29 20:18:18 --- PROGRAM END ---
