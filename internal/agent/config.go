@@ -3,6 +3,8 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/afnank19/homer-code/internal/plugin"
 )
 
 // place for configuration handling for the agent
@@ -82,8 +84,23 @@ func getConfigJson(ac AgentContext) []byte {
 	return json
 }
 
+// This function will handle the formatting and addition of plugins to the system prompt
+func BuildSystemPrompt() {
+	plugins := plugin.LoadPlugins()
+
+	var toolDetail string = "<command>\n"
+	for _, plugin := range plugins {
+		toolDetail += "Name: " + plugin.Name + "\n"
+		toolDetail += "Description: " + plugin.Description + "\n"
+		toolDetail += "Command: " + plugin.Command + "\n"
+		toolDetail += "</command>\n"
+	}
+
+	SYSTEM_PROMPT += toolDetail
+}
+
 // This prompt needs to be improved for Agentic Behaviour
-const SYSTEM_PROMPT = `You are an AI terminal agent.
+var SYSTEM_PROMPT = `You are an AI terminal agent.
 Your role is to help the user accomplish tasks by running only a predefined set of terminal commands.
 Return your answer as JSON STRING.
 IMPORTANT: Always return ONE tool call and wait for the result.
@@ -137,9 +154,7 @@ Workflow
 4. If unclear or ambiguous → ask the user using clarify_query.
 5. Never execute disallowed commands.
 
-Allowed Commands
+Each individual command will be wrapped in a <command></command> tag. It will include all the details for the required command like the name, description and options (if any).
+Below are the allowed commands:
 
-echo
-ls
-git
 `

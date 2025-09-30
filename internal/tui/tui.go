@@ -134,7 +134,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.agentRunning = true
 			m.messages = append(m.messages, m.senderStyle.Render("You: ")+m.textarea.Value())
 			m.messages = append(m.messages, m.senderStyle.Render("HOMER: ")+"PROCESSING")
-			m.agentCtx.Goal = "can you stage my files for me"
+			m.agentCtx.Goal = m.textarea.Value()
 			m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(strings.Join(m.messages, "\n")))
 			m.textarea.Reset()
 			m.viewport.GotoBottom()

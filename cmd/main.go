@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
+	"github.com/afnank19/homer-code/internal/agent"
 	"github.com/afnank19/homer-code/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -22,6 +24,22 @@ func main() {
 	log.SetOutput(f)
 
 	log.Println("--- DEBUG BEGIN ---")
+
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		panic(err)
+	}
+
+	appConfigDir := filepath.Join(configDir, "homer-code/plugins")
+
+	err = os.MkdirAll(appConfigDir, 0o755)
+	if err != nil {
+		panic(err)
+	}
+
+	// plugin.LoadPlugins()
+	agent.BuildSystemPrompt()
+	// fmt.Println(agent.SYSTEM_PROMPT)
 
 	tui.StartTUI()
 
