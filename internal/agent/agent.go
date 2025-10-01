@@ -180,7 +180,7 @@ func RunAgentIteration(ac AgentContext) AgentContext {
 	}
 
 	if tr.Name == "talk_to_user" {
-		fmt.Println("Homer:", tr.Parameters.Query)
+		// fmt.Println("Homer:", tr.Parameters.Query)
 		tH.PrevToolCalled = tr.Name
 		tH.PrevToolOutput = tr.Parameters.Query
 		ac.History = append(ac.History, tH)

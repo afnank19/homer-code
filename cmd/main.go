@@ -14,7 +14,7 @@ import (
 // new ubuntu ssh test
 
 func main() {
-	f, err := tea.LogToFile("debug.log", "debug")
+	f, err := tea.LogToFile("debug-2.log", "debug")
 	if err != nil {
 		fmt.Println("fatal:", err)
 		os.Exit(1)

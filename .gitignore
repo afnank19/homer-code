@@ -1,3 +1,5 @@
 main
 PLAN.md
 .env
+
+*.log
